@@ -6,14 +6,19 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key' # Required for session management
 
 DATABASE = 'highscores.db'
+quiz_database = 'quiz.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
-    return conn
+    quiz = sqlite3.connect(quiz_database)
+    quiz.row_factory = sqlite3.Row
+    return conn, quiz
 
 def init_db():
-    db = get_db_connection()
+    dbs = get_db_connection()
+    db = dbs[0]
+    db2 = dbs[1]
     db.execute('''
         CREATE TABLE IF NOT EXISTS high_scores (
             id INTEGER PRIMARY KEY, 
@@ -21,6 +26,12 @@ def init_db():
             score INTEGER
         )
     ''')
+    db2.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_questions (
+            id INTEGER PRIMARY KEY,
+            question TEXT NOT NULL,
+            answer TEXT NOT NULL,
+            score INTEGER)''')
     db.commit()
     db.close()
 
@@ -118,6 +129,40 @@ def hilo_guess():
                            number_first = number_first,
                            number_second = number_second,
                            result = result)
+
+
+@app.route('/quiz', methods=['POST'])
+def quiz():
+    if 'quiz_points' not in session:
+        session['quiz_points'] = 0
+    points = session['quiz_points']
+
+    if 'quiz_errors' not in session:
+        session['quiz_errors'] = 3
+    errors = session['quiz_errors']
+
+    if errors == 0:
+        final_points = session['quiz_points']
+        session['quiz_points'] = 0 # reset game points
+        session['quiz_errors'] = 3 # reset errors
+        top_scores = get_high_scores()
+        return render_template('quiz_gameover.html',
+                               points = final_points,
+                               top_scores = top_scores)
+
+    while True:
+        number = randint(1,10)
+        quiz_question = ('SELECT question FROM questions WHERE id = number')
+
+    return render_template('quiz.html',
+                           points=points,
+                           errors = errors,
+                           quiz_question = quiz_question)
+
+
+@app.route('/quiz_guess', methods=['POST'])
+def quiz_guess():
+    pass
 
 
 if __name__ == '__main__':
