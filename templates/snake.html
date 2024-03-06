@@ -33,6 +33,16 @@
 
 {% block content %}
     <div class="flex-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Snake</h1>
+            <div class="alert alert-info p-2" role="alert">
+                <p id="score">Points: 0</p>
+            </div>
+            <form action="{{ url_for('snake_result') }}" method="post" id="snakeDataForm">
+                <input value="0" name="snakeScore" id="snakeScore" hidden>
+                <button type="submit" hidden></button>
+            </form>
+        </div>
     <div id="gameContainer" class="game-container"></div>
 
     <script>
@@ -44,6 +54,9 @@
         const gameHeight = 400;
 
         function placeFood() {
+            let score = snake.length - 1;
+            document.getElementById("score").innerHTML = "Score: " + score;
+            document.getElementById("snakeScore").value = score;
             food = {
                 x: Math.floor(Math.random() * (gameWidth / 20)) * 20,
                 y: Math.floor(Math.random() * (gameHeight / 20)) * 20
@@ -66,7 +79,8 @@
     function update() {
         if (checkGameOver()) {
             // Ask the player if they want to play again
-            let playAgain = confirm("Game Over! Do you want to play again?");
+            document.getElementById("snakeDataForm").submit();
+            /*let playAgain = confirm("Game Over! Do you want to play again?");
             if (playAgain) {
                 // Reset game state to start a new game
                 resetGameState();
@@ -74,7 +88,7 @@
                 // Redirect to the index route if they choose not to play again
                 window.location.href = '/';
             }
-            return;
+            return;*/
         }
 
             const newHead = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
