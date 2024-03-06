@@ -4,3 +4,9 @@ __pycache__/
 Lib/
 Scripts/
 pyvenv.cfg
+
+.idea/dataSources.xml
+.idea/vcs.xml
+
+.idea/guppygame2.iml
+.idea/misc.xml
