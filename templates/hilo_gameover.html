@@ -54,11 +54,13 @@
             .catch((error) => {
                 console.error('Error:', error);
             });
+
+            window.location.replace('http://127.0.0.1:5000/hilo')
         });
         </script>
 
 
 
 
-<a href="{{ url_for('hilo') }}" class="btn btn-primary">Start New Game</a>
+<!-- <a href="{{ url_for('hilo') }}" class="btn btn-primary">Start New Game</a>
 {%  endblock content %}
