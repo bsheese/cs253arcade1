@@ -34,6 +34,8 @@ def init_db():
             score INTEGER)''')
     db.commit()
     db.close()
+    db2.commit()
+    db2.close()
 
 # Manually pushing the application context
 with app.app_context():
@@ -131,9 +133,9 @@ def hilo_guess():
                            result = result)
 
 
-@app.route('/quiz', methods=['POST', 'GET'])
+@app.route('/quiz')
 def quiz():
-    quiz = get_db_connection()[1]
+    quiz_db = get_db_connection()[1]
     if 'quiz_points' not in session:
         session['quiz_points'] = 0
     points = session['quiz_points']
@@ -152,21 +154,22 @@ def quiz():
                                top_scores = top_scores)
 
     while True:
-        number = randint(1,10)
-        quiz_question = quiz.execute('SELECT question FROM quiz WHERE id = ?', [number])
+        number = 1 #randint(1,10)
+        quiz_questions = get_quiz_questions()
+        quiz_question = quiz_db.execute('SELECT question FROM quiz_questions WHERE id = ?', [number]).fetchall()
 
-    quiz.close()
+    quiz_db.close()
     return render_template('quiz.html',
                            points=points,
                            errors = errors,
                            quiz_question = quiz_question)
 
 
-@app.route('/quiz', methods=['POST'])
-def quiz():
+def add_quiz_questions():
     quiz = get_db_connection()[1]
+    quiz.execute('DELETE FROM quiz')
     quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)',
-                 ["How much more likely are giraffes to get hit by lightning than people?", "30 times"])
+                 ["How many times more likely are giraffes to get hit by lightning than people?", "30"])
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
@@ -176,15 +179,42 @@ def quiz():
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
     #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    quiz.commit()
     quiz.close()
-    return render_template('quiz.html')
+
+
+def get_quiz_questions():
+    quiz = get_db_connection()[1]
+    add_quiz_questions()
+    questions = quiz.execute('SELECT * FROM quiz ORDER BY id').fetchall()
+    quiz.close()
+    return questions
 
 
 @app.route('/quiz_guess', methods=['POST'])
 def quiz_guess():
     quiz = get_db_connection()[1]
+    quiz_questions = get_quiz_questions()
+    # here we need to figure out how to pull in the same question the user is answering
+    # we need the id/question/answer so we can check the actual answer to the question with the id
+    # that should be linked to the user's answer
+    # so possibly use the hidden input to send the question id with the answer?
+    answer = request.form.get('answer')
+    id = request.form.get('id')
+    points = int(request.form.get('points'))
+
+
+    if answer == quiz.execute('SELECT answer FROM quiz_questions WHERE id = ?', [id]):
+        result = 'correct'
+        session['quiz_points'] += 50
+    else:
+        result = 'incorrect'
+        session['quiz_points'] -= 50
+        session['quiz_errors'] -= 1
     quiz.close()
-    return render_template('quiz_guess.html')
+    return render_template('quiz.html',
+                           points = points,
+                           result = result)
 
 
 if __name__ == '__main__':

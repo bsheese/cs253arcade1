@@ -18,10 +18,10 @@
         Quiz Question: {{ quiz_question }}
     </div>
 
-    <form action="/quiz" method="post" id="quizForm">
+    <form action="/quiz_guess" method="post" id="quizForm">
             <input name="answer" type="text" placeholder="What's your best guess??">
             <input type="hidden" name="points" value="{{ points }}">
-{#            <input type="hidden" name="guess" id="hiddenGuess">#}
+            <input type="hidden" name="id" id="{{ quiz.id }}">
 
             <button type="submit" class="btn btn-success btn-lg mt-3">Submit</button>
     </form>
