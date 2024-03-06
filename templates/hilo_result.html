@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">High Low Game</h1>
+    <h1 class="mb-4">{% if result == 'correct' %}Correct{% else %}Wrong{% endif %}</h1>
 
     <div class="alert alert-secondary" role="alert">
         First number = {{ number_first }}
