@@ -64,7 +64,7 @@ def snake():
 def snake_gameover():
     score = request.form['snakeScore']
 
-    return render_template('snake_gameover.html', score=score)
+    return render_template('snake_result.html', score=score)
 
 @app.route('/hilo')
 def hilo():
