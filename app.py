@@ -27,7 +27,7 @@ def init_db():
         )
     ''')
     db2.execute('''
-        CREATE TABLE IF NOT EXISTS quiz_questions (
+        CREATE TABLE IF NOT EXISTS quiz (
             id INTEGER PRIMARY KEY,
             question TEXT NOT NULL,
             answer TEXT NOT NULL,
@@ -40,13 +40,13 @@ with app.app_context():
     init_db()
 
 def add_score(name, score):
-    conn = get_db_connection()
+    conn = get_db_connection()[0]
     conn.execute('INSERT INTO high_scores (name, score) VALUES (?, ?)', (name, score))
     conn.commit()
     conn.close()
 
 def get_high_scores(limit=10):
-    conn = get_db_connection()
+    conn = get_db_connection()[0]
     scores = conn.execute('SELECT name, score FROM high_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
     conn.close()
     return scores
@@ -131,8 +131,9 @@ def hilo_guess():
                            result = result)
 
 
-@app.route('/quiz', methods=['POST'])
+@app.route('/quiz', methods=['POST', 'GET'])
 def quiz():
+    quiz = get_db_connection()[1]
     if 'quiz_points' not in session:
         session['quiz_points'] = 0
     points = session['quiz_points']
@@ -152,17 +153,38 @@ def quiz():
 
     while True:
         number = randint(1,10)
-        quiz_question = ('SELECT question FROM questions WHERE id = number')
+        quiz_question = quiz.execute('SELECT question FROM quiz WHERE id = ?', [number])
 
+    quiz.close()
     return render_template('quiz.html',
                            points=points,
                            errors = errors,
                            quiz_question = quiz_question)
 
 
+@app.route('/quiz', methods=['POST'])
+def quiz():
+    quiz = get_db_connection()[1]
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)',
+                 ["How much more likely are giraffes to get hit by lightning than people?", "30 times"])
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    quiz.close()
+    return render_template('quiz.html')
+
+
 @app.route('/quiz_guess', methods=['POST'])
 def quiz_guess():
-    pass
+    quiz = get_db_connection()[1]
+    quiz.close()
+    return render_template('quiz_guess.html')
 
 
 if __name__ == '__main__':
