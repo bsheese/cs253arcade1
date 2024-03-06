@@ -56,9 +56,15 @@ def get_high_scores_route():
 def index():
     return render_template('index.html')
 
-@app.route('/snake')
+@app.route('/snake', methods=["POST", "GET"])
 def snake():
     return render_template('snake.html')
+
+@app.route('/snake_gameover', methods=["POST", "GET"])
+def snake_gameover():
+    score = request.form['snakeScore']
+
+    return render_template('snake_gameover.html', score=score)
 
 @app.route('/hilo')
 def hilo():
