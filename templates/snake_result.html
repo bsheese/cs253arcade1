@@ -23,9 +23,9 @@
     </div>
 
     <div id="enter initials">
-        <form id="scoreForm">
-            <input type="hidden" name="game" value="hilo">
-            <input type="hidden" name="score" value="{{ snakeScore }}">
+        <form id="snakeScoreForm">
+            <input type="hidden" name="game" value="snake">
+            <input type="hidden" name="score" value="{{ score }}">
             <input type="text" name="name" placeholder="Enter your name" required>
             <button type="submit">Submit</button>
         </form>
@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        document.getElementById('scoreForm').addEventListener('submit', function(e) {
+        document.getElementById('snakeScoreForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Prevent the default form submission
 
             // Simplified conversion of FormData to JSON Object
