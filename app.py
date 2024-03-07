@@ -150,6 +150,9 @@ def hilo_guess():
 @app.route('/quiz')
 def quiz():
     quiz = get_db_connection()[1]
+    quiz_score = get_db_connection()[2]
+    top_score_row = quiz_score.execute('SELECT * FROM quiz_scores ORDER BY score DESC LIMIT 1').fetchall()
+    top_score = top_score_row[0][2]
     add_quiz_questions()
     if 'quiz_points' not in session:
         session['quiz_points'] = 0
@@ -173,7 +176,7 @@ def quiz():
     questions = quiz.execute('SELECT * FROM quiz WHERE id = ? ORDER BY id', [id]).fetchall()
     quiz_question = questions[0][1]
     quiz.close()
-    return render_template('quiz.html', id=id, errors = errors, points=points,quiz_question = quiz_question)
+    return render_template('quiz.html', id=id, errors = errors, points=points,quiz_question = quiz_question, top_score=top_score)
 
 
 def add_quiz_questions():

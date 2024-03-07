@@ -4,8 +4,17 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h1 class="">Ultimate Trivia</h1>
+    <div class="d-flex justify-content-center align-items-center">
+        <h1>Ultimate Trivia</h1>
+
+    </div>
+    <br>
+    <br>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="alert alert-primary rounded p-2" role="alert">
+           Score to Beat: {{ top_score }}
+        </div>
         <div class="alert alert-info p-2" role="alert">
             Errors Remaining = {{ errors }}
         </div>
