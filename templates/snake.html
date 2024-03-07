@@ -41,12 +41,12 @@
               font-family: Arial, sans-serif;
               font-size: 24px;
               font-weight: bold;
-              color: red;
+              color: Green;
                 padding: 10px;
-              text-align: left; /* Align the text to the right side */
-                position: absolute; /* Position the score element absolutely */
-                top: 10px; /* Move the score element to the top */
-               right: 10px; /* Add margin to the right */
+              text-align: left;
+                position: absolute;
+                top: 10px;
+               right: 10px;
     }
     </style>
 {% endblock head %}
@@ -117,9 +117,9 @@
                 window.location.href = '/';
             }
              */
-            document.getElementById('game-over').innerText = 'Game Over';
+            document.getElementById('game-over').style.display = 'block';
             clearInterval(loop);
-            resetScore()
+            resetScore();
             return;
         }
 
@@ -128,13 +128,15 @@
 
             if (snake[0].x === food.x && snake[0].y === food.y) {
                 placeFood();
-                increaseScore()
+                increaseScore();
             } else {
                 snake.pop();
             }
 
             render();
         }
+
+
         function resetGameState() {
             // Reset the snake to its initial state or position
             snake = [{x: 200, y: 200}];
@@ -184,6 +186,7 @@
 
 
         function play() {
+            document.getElementById('game-over').style.display = 'none';
             if (first_round === false){
                  resetGameState();
             }
@@ -200,7 +203,7 @@
     <button onclick= "play()">Play</button>
     </div>
      <div id="score">Score: 0</div>
-     <div id="game-over"></div>
+     <div id="game-over" style="display: none;">Game Over!</div>
 
 
 {% endblock content%}
