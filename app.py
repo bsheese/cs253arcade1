@@ -7,18 +7,22 @@ app.secret_key = 'your_secret_key' # Required for session management
 
 DATABASE = 'highscores.db'
 quiz_database = 'quiz.db'
+quiz_score_database = 'quiz_score.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     quiz = sqlite3.connect(quiz_database)
     quiz.row_factory = sqlite3.Row
-    return conn, quiz
+    quiz_scores = sqlite3.connect(quiz_score_database)
+    quiz_scores.row_factory = sqlite3.Row
+    return conn, quiz, quiz_scores
 
 def init_db():
     dbs = get_db_connection()
     db = dbs[0]
     db2 = dbs[1]
+    db3 = dbs[2]
     db.execute('''
         CREATE TABLE IF NOT EXISTS high_scores (
             id INTEGER PRIMARY KEY, 
@@ -32,14 +36,24 @@ def init_db():
             question TEXT NOT NULL,
             answer TEXT NOT NULL,
             score INTEGER)''')
+    db3.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_scores (
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            score INTEGER
+            )
+        ''')
     db.commit()
     db.close()
     db2.commit()
     db2.close()
+    db3.commit()
+    db3.close()
 
 # Manually pushing the application context
 with app.app_context():
     init_db()
+
 
 def add_score(name, score):
     conn = get_db_connection()[0]
@@ -135,34 +149,31 @@ def hilo_guess():
 
 @app.route('/quiz')
 def quiz():
-    quiz_db = get_db_connection()[1]
+    quiz = get_db_connection()[1]
+    add_quiz_questions()
     if 'quiz_points' not in session:
         session['quiz_points'] = 0
     points = session['quiz_points']
-
+    #
     if 'quiz_errors' not in session:
         session['quiz_errors'] = 3
     errors = session['quiz_errors']
-
+    #
     if errors == 0:
         final_points = session['quiz_points']
         session['quiz_points'] = 0 # reset game points
         session['quiz_errors'] = 3 # reset errors
-        top_scores = get_high_scores()
+        top_scores_quiz = get_high_scores_quiz()
         return render_template('quiz_gameover.html',
-                               points = final_points,
-                               top_scores = top_scores)
+                               points=final_points,
+                               top_scores=top_scores_quiz,
+                               )
 
-    while True:
-        number = 1 #randint(1,10)
-        quiz_questions = get_quiz_questions()
-        quiz_question = quiz_db.execute('SELECT question FROM quiz_questions WHERE id = ?', [number]).fetchall()
-
-    quiz_db.close()
-    return render_template('quiz.html',
-                           points=points,
-                           errors = errors,
-                           quiz_question = quiz_question)
+    id = randint(1,10)
+    questions = quiz.execute('SELECT * FROM quiz WHERE id = ? ORDER BY id', [id]).fetchall()
+    quiz_question = questions[0][1]
+    quiz.close()
+    return render_template('quiz.html', id=id, errors = errors, points=points,quiz_question = quiz_question)
 
 
 def add_quiz_questions():
@@ -170,41 +181,32 @@ def add_quiz_questions():
     quiz.execute('DELETE FROM quiz')
     quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)',
                  ["How many times more likely are giraffes to get hit by lightning than people?", "30"])
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
-    #quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)')
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['Do identical twins have the same fingerprints?', 'no'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['What is the tallest mountain on Earth?', 'mount everest'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['Do Ants have lungs?', 'No'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['Which type of commonly eaten fruit is radioactive?', 'bananas'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['According to the World Happiness Report, what country is the happiest?', 'finland'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['Can hippos swim?', 'no'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['Can you yo-yo in space?', 'yes'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['The biggest butterfly in the world has a wingspan of how many cm?', '31cm'])
+    quiz.execute('INSERT INTO quiz (question, answer) VALUES (?, ?)', ['What color are Falmingoes born? (Hint: not pink!)', 'white'])
     quiz.commit()
     quiz.close()
 
-
-def get_quiz_questions():
-    quiz = get_db_connection()[1]
-    add_quiz_questions()
-    questions = quiz.execute('SELECT * FROM quiz ORDER BY id').fetchall()
-    quiz.close()
-    return questions
 
 
 @app.route('/quiz_guess', methods=['POST'])
 def quiz_guess():
     quiz = get_db_connection()[1]
-    quiz_questions = get_quiz_questions()
-    # here we need to figure out how to pull in the same question the user is answering
-    # we need the id/question/answer so we can check the actual answer to the question with the id
-    # that should be linked to the user's answer
-    # so possibly use the hidden input to send the question id with the answer?
-    answer = request.form.get('answer')
+    answer = str(request.form.get('answer'))
     id = request.form.get('id')
     points = int(request.form.get('points'))
+    questions = quiz.execute('SELECT * FROM quiz WHERE id = ? ORDER BY id', [id]).fetchall()
+    quiz_question = questions[0][1]
+    quiz_answer = questions[0][2]
 
 
-    if answer == quiz.execute('SELECT answer FROM quiz_questions WHERE id = ?', [id]):
+    if answer.lower() == str(quiz_answer):
         result = 'correct'
         session['quiz_points'] += 50
     else:
@@ -212,9 +214,33 @@ def quiz_guess():
         session['quiz_points'] -= 50
         session['quiz_errors'] -= 1
     quiz.close()
-    return render_template('quiz.html',
-                           points = points,
-                           result = result)
+
+    return render_template('quiz_resutl.html',
+                           result=result, quiz_answer=quiz_answer, points=points, quiz_question=quiz_question)
+
+def add_score_quiz(name, score):
+    quiz_score = get_db_connection()[2]
+    quiz_score.execute('INSERT INTO quiz_scores (name, score) VALUES (?, ?)', (name, score))
+    quiz_score.commit()
+    quiz_score.close()
+
+def get_high_scores_quiz(limit=10):
+    quiz_score = get_db_connection()[2]
+    q_scores = quiz_score.execute('SELECT name, score FROM quiz_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
+    quiz_score.close()
+    return q_scores
+
+@app.route('/add_score_quiz', methods=['POST'])
+def add_score_quiz_route():
+    score_data = request.json
+    add_score_quiz(score_data['name'], score_data['score'])
+    return jsonify({'message': 'Score added successfully!'}), 201
+
+@app.route('/high_scores_quiz', methods=['GET'])
+def get_high_scores_quiz_route():
+    scores = get_high_scores_quiz()
+    return jsonify([{'name': row['name'], 'score': row['score']} for row in scores])
+
 
 
 if __name__ == '__main__':

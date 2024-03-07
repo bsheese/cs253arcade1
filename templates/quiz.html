@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 
-{% block title %}High Low{% endblock %}
+{% block title %}Ultimate Trivia{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
         <h1 class="">Ultimate Trivia</h1>
         <div class="alert alert-info p-2" role="alert">
             Errors Remaining = {{ errors }}
@@ -18,16 +18,14 @@
         Quiz Question: {{ quiz_question }}
     </div>
 
-    <form action="/quiz_guess" method="post" id="quizForm">
-            <input name="answer" type="text" placeholder="What's your best guess??">
-            <input type="hidden" name="points" value="{{ points }}">
-            <input type="hidden" name="id" id="{{ quiz.id }}">
+    <form action="/quiz_guess" method="post">
+        <label for="answr" class="form-label">Guess:</label>
+            <input name="answer" class="form-control" id="answr" type="text" placeholder="What's your best guess??">
+            <input type="hidden" name="points" value={{ points }}>
+            <input type="hidden" name="id" id="1" value="{{ id }}">
 
             <button type="submit" class="btn btn-success btn-lg mt-3">Submit</button>
     </form>
 
-
-<div/>
-
-
+</div>
 {%  endblock %}
