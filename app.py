@@ -8,6 +8,8 @@ app.secret_key = 'your_secret_key' # Required for session management
 DATABASE = 'highscores.db'
 quiz_database = 'quiz.db'
 quiz_score_database = 'quiz_score.db'
+id_list = []
+
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -147,6 +149,7 @@ def hilo_guess():
                            result = result)
 
 
+
 @app.route('/quiz')
 def quiz():
     quiz = get_db_connection()[1]
@@ -163,6 +166,7 @@ def quiz():
     errors = session['quiz_errors']
     #
     if errors == 0:
+        id_list.clear()
         final_points = session['quiz_points']
         session['quiz_points'] = 0 # reset game points
         session['quiz_errors'] = 3 # reset errors
@@ -171,13 +175,29 @@ def quiz():
                                points=final_points,
                                top_scores=top_scores_quiz,
                                )
-
+    if len(id_list) > 9:
+        id_list.clear()
+        final_points = session['quiz_points']
+        session['quiz_points'] = 0  # reset game points
+        session['quiz_errors'] = 3  # reset errors
+        top_scores_quiz = get_high_scores_quiz()
+        return render_template('quiz_gameover.html',
+                               points=final_points,
+                               top_scores=top_scores_quiz,
+                               )
     id = randint(1,10)
+    if id in id_list:
+        id = randint(1,10)
+        while id in id_list:
+            id = randint(1,10)
+        id_list.append(id)
+    else:
+        id_list.append(id)
     questions = quiz.execute('SELECT * FROM quiz WHERE id = ? ORDER BY id', [id]).fetchall()
     quiz_question = questions[0][1]
     quiz.close()
-    return render_template('quiz.html', id=id, errors = errors, points=points,quiz_question = quiz_question, top_score=top_score)
-
+    if len(id_list) <= 10:
+        return render_template('quiz.html', id=id, errors = errors, points=points,quiz_question = quiz_question, top_score=top_score)
 
 def add_quiz_questions():
     quiz = get_db_connection()[1]
@@ -209,7 +229,7 @@ def quiz_guess():
     quiz_answer = questions[0][2]
 
 
-    if answer.lower() == str(quiz_answer):
+    if answer.lower() == str(quiz_answer).lower():
         result = 'correct'
         session['quiz_points'] += 50
     else:
