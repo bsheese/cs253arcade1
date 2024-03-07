@@ -4,6 +4,14 @@
 {% block head %}
     <title>Snake</title>
     <style>
+
+        #game-over {
+      font-size: 24px;
+      font-weight: bold;
+      color: red;
+      text-align: center;
+      margin-top: 100px;
+        }
         .flex-container {
             display: flex;
             justify-content: center;
@@ -28,6 +36,18 @@
             background-color: red;
             position: absolute;
         }
+
+        #score {
+              font-family: Arial, sans-serif;
+              font-size: 24px;
+              font-weight: bold;
+              color: red;
+                padding: 10px;
+              text-align: left; /* Align the text to the right side */
+                position: absolute; /* Position the score element absolutely */
+                top: 10px; /* Move the score element to the top */
+               right: 10px; /* Add margin to the right */
+    }
     </style>
 {% endblock head %}
 
@@ -41,9 +61,12 @@
         let food = {x: 100, y: 100};
         let direction = {x: 0, y: -20};
         let first_round = true;
+        let score = 0
         const gameContainer = document.getElementById('gameContainer');
         const gameWidth = 400;
         const gameHeight = 400;
+        const showScore = document.getElementById('score');
+
 
         resetGameState();
 
@@ -67,6 +90,20 @@
             return false;
         }
 
+         function updateScore() {
+            showScore.textContent = 'Score: ' + score;
+        }
+
+        function increaseScore() {
+            score += 10;
+            updateScore();
+        }
+
+        function resetScore() {
+        score = 0;
+        updateScore();
+        }
+
     function update() {
         if (checkGameOver()) {
             // Ask the player if they want to play again
@@ -80,7 +117,9 @@
                 window.location.href = '/';
             }
              */
+            document.getElementById('game-over').innerText = 'Game Over';
             clearInterval(loop);
+            resetScore()
             return;
         }
 
@@ -89,6 +128,7 @@
 
             if (snake[0].x === food.x && snake[0].y === food.y) {
                 placeFood();
+                increaseScore()
             } else {
                 snake.pop();
             }
@@ -159,6 +199,8 @@
     </script>
     <button onclick= "play()">Play</button>
     </div>
+     <div id="score">Score: 0</div>
+     <div id="game-over"></div>
 
 
 {% endblock content%}
