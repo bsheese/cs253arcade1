@@ -119,6 +119,12 @@ def hilo_guess():
                            number_second = number_second,
                            result = result)
 
+@app.route('/hilo_scores', methods=['POST'])
+def hilo_scores():
+    top_scores = get_high_scores()
+    final_points = session['hilo_points']
+    return render_template('hilo_scores.html', top_scores = top_scores, points = final_points)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
