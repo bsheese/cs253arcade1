@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}Ultimate Trivia{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Ultimate Trivia</h1>
+
+    <div class="alert alert-secondary" role="alert">
+        Quiz Question = {{ quiz_question }}
+    </div>
+    <div class="alert alert-secondary" role="alert">
+        Answer = {{ quiz_answer }}
+    </div>
+
+    <div class="alert {% if result == 'correct' %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+        You were {{ result }}.
+        {% if result == "correct" %}
+            <p>+ 50 points</p>
+        {% else %}
+            <p>- 50 points</p>
+        {% endif %}
+    </div>
+
+    <div class="mt-4">
+        <form action="{{ url_for('quiz') }}" method="get">
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
