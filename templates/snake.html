@@ -12,6 +12,7 @@
       text-align: center;
       margin-top: 100px;
         }
+
         .flex-container {
             display: flex;
             justify-content: center;
@@ -90,50 +91,48 @@
             return false;
         }
 
-         function updateScore() {
+        function updateScore () {
             showScore.textContent = 'Score: ' + score;
         }
 
-        function increaseScore() {
+        function increaseScore () {
             score += 10;
             updateScore();
         }
 
-        function resetScore() {
-        score = 0;
-        updateScore();
+        function resetScore () {
+            score = 0;
+            updateScore();
         }
 
-    function update() {
-        if (checkGameOver()) {
-            // Ask the player if they want to play again
-            /*
-            let playAgain = confirm("Game Over! Do you want to play again?");
-            if (playAgain) {
-                // Reset game state to start a new game
-                resetGameState();
-            } else {
-                // Redirect to the index route if they choose not to play again
-                window.location.href = '/';
+        function update () {
+            if (checkGameOver ()) {
+                // Ask the player if they want to play again
+                /*
+                let playAgain = confirm("Game Over! Do you want to play again?");
+                if (playAgain) {
+                    // Reset game state to start a new game
+                    resetGameState();
+                } else {
+                    // Redirect to the index route if they choose not to play again
+                    window.location.href = '/';
+                }
+                 */
+                document.getElementById ( 'game-over' ).style.display = 'block';
+                clearInterval ( loop );
+                return;
             }
-             */
-            document.getElementById('game-over').style.display = 'block';
-            clearInterval(loop);
-            resetScore();
-            return;
-        }
 
             const newHead = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
-            snake.unshift(newHead);
+            snake.unshift ( newHead );
 
             if (snake[0].x === food.x && snake[0].y === food.y) {
-                placeFood();
-                increaseScore();
+                placeFood ();
             } else {
-                snake.pop();
+                snake.pop ();
             }
 
-            render();
+            render ();
         }
 
 
@@ -186,15 +185,14 @@
 
 
         function play() {
-            document.getElementById('game-over').style.display = 'none';
-            if (first_round === false){
-                 resetGameState();
-            }
-            else {
+            document.getElementById( 'game-over' ).style.display = 'none';
+            if (first_round === false) {
+                resetGameState();
+            } else {
                 first_round = false;
             }
 
-            loop = setInterval(update, 100);
+            loop = setInterval( update, 100 );
 
             return true
         }
