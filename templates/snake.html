@@ -36,12 +36,16 @@
     <div id="gameContainer" class="game-container"></div>
 
     <script>
+        let loop;
         let snake = [{x: 200, y: 200}];
         let food = {x: 100, y: 100};
         let direction = {x: 0, y: -20};
+        let first_round = true;
         const gameContainer = document.getElementById('gameContainer');
         const gameWidth = 400;
         const gameHeight = 400;
+
+        resetGameState();
 
         function placeFood() {
             food = {
@@ -66,6 +70,7 @@
     function update() {
         if (checkGameOver()) {
             // Ask the player if they want to play again
+            /*
             let playAgain = confirm("Game Over! Do you want to play again?");
             if (playAgain) {
                 // Reset game state to start a new game
@@ -74,6 +79,8 @@
                 // Redirect to the index route if they choose not to play again
                 window.location.href = '/';
             }
+             */
+            clearInterval(loop);
             return;
         }
 
@@ -135,8 +142,23 @@
             }
         });
 
-        setInterval(update, 100);
-        placeFood(); // Initial placement of food
+
+        function play() {
+            if (first_round === false){
+                 resetGameState();
+            }
+            else {
+                first_round = false;
+            }
+
+            loop = setInterval(update, 100);
+
+            return true
+        }
+
     </script>
+    <button onclick= "play()">Play</button>
     </div>
+
+
 {% endblock content%}
