@@ -12,6 +12,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     db = get_db_connection()
     db.execute('''
@@ -24,9 +25,11 @@ def init_db():
     db.commit()
     db.close()
 
+
 # Manually pushing the application context
 with app.app_context():
     init_db()
+
 
 def add_score(name, score):
     conn = get_db_connection()
@@ -34,17 +37,20 @@ def add_score(name, score):
     conn.commit()
     conn.close()
 
+
 def get_high_scores(limit=10):
     conn = get_db_connection()
-    scores = conn.execute('SELECT name, score FROM high_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
+    scores = conn.execute('SELECT name, MAX(score) AS score FROM high_scores GROUP BY name ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
     conn.close()
     return scores
+
 
 @app.route('/add_score', methods=['POST'])
 def add_score_route():
     score_data = request.json
     add_score(score_data['name'], score_data['score'])
     return jsonify({'message': 'Score added successfully!'}), 201
+
 
 @app.route('/high_scores', methods=['GET'])
 def get_high_scores_route():
@@ -59,6 +65,7 @@ def index():
 @app.route('/snake')
 def snake():
     return render_template('snake.html')
+
 
 @app.route('/hilo')
 def hilo():

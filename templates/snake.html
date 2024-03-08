@@ -52,7 +52,7 @@
 
         function checkGameOver() {
             const head = snake[0];
-            if (head.x < 0 || head.x >= gameWidth || head.y < 0 || head.y >= gameHeight) {
+            if (head.x <= 0 || head.x >= gameWidth-20 || head.y <= 0 || head.y >= gameHeight-20) {
                 return true;
             }
             for (let i = 1; i < snake.length; i++) {
