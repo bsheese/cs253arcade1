@@ -60,6 +60,7 @@ def index():
 def snake():
     return render_template('snake.html')
 
+
 @app.route('/hilo')
 def hilo():
     # Initialize points to 100 if it's not already in the session
