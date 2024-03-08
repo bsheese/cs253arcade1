@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>GAME OVER</h1>
         <div class="alert alert-info p-2" role="alert">
-            Points = {{ points }}
+            Points = {{ score }}
         </div>
     </div>
     <div>
@@ -23,9 +23,9 @@
     </div>
 
     <div id="enter initials">
-        <form id="scoreForm">
-            <input type="hidden" name="game" value="hilo">
-            <input type="hidden" name="score" value="{{ points }}">
+        <form id="snakeScoreForm">
+            <input type="hidden" name="game" value="snake">
+            <input type="hidden" name="score" value="{{ score }}">
             <input type="text" name="name" placeholder="Enter your name" required>
             <button type="submit">Submit</button>
         </form>
@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        document.getElementById('scoreForm').addEventListener('submit', function(e) {
+        document.getElementById('snakeScoreForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Prevent the default form submission
 
             // Simplified conversion of FormData to JSON Object
@@ -54,13 +54,11 @@
             .catch((error) => {
                 console.error('Error:', error);
             });
-
-            window.location.replace('http://127.0.0.1:5000/hilo')
         });
-        </script>
+    </script>
 
 
 
 
-<!-- <a href="{{ url_for('hilo') }}" class="btn btn-primary">Start New Game</a>
+<a href="{{ url_for('snake') }}" class="btn btn-primary">Start New Game</a>
 {%  endblock content %}

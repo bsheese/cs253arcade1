@@ -15,12 +15,26 @@ def get_db_connection():
 def init_db():
     db = get_db_connection()
     db.execute('''
-        CREATE TABLE IF NOT EXISTS high_scores (
+        CREATE TABLE IF NOT EXISTS high_scores_hilo (
             id INTEGER PRIMARY KEY, 
             name TEXT, 
             score INTEGER
         )
     ''')
+    db.execute('''
+            CREATE TABLE IF NOT EXISTS high_scores_snake (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                score INTEGER
+            )
+        ''')
+    db.execute('''
+            CREATE TABLE IF NOT EXISTS high_scores_guppies (
+                id INTEGER PRIMARY KEY, 
+                name TEXT, 
+                score INTEGER
+            )
+        ''')
     db.commit()
     db.close()
 
@@ -28,27 +42,31 @@ def init_db():
 with app.app_context():
     init_db()
 
-def add_score(name, score):
+def add_score(table, name, score):
     conn = get_db_connection()
-    conn.execute('INSERT INTO high_scores (name, score) VALUES (?, ?)', (name, score))
+    conn.execute(f'INSERT INTO {table} (name, score) VALUES (?, ?)', (name, score))
     conn.commit()
     conn.close()
 
-def get_high_scores(limit=10):
+def get_high_scores(table, limit=10):
     conn = get_db_connection()
-    scores = conn.execute('SELECT name, score FROM high_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
+    scores = conn.execute(f'SELECT name, score FROM {table} ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
     conn.close()
     return scores
 
 @app.route('/add_score', methods=['POST'])
 def add_score_route():
     score_data = request.json
-    add_score(score_data['name'], score_data['score'])
+    table = 'high_scores_' + score_data['game']
+    add_score(table, score_data['name'], score_data['score'])
     return jsonify({'message': 'Score added successfully!'}), 201
 
 @app.route('/high_scores', methods=['GET'])
 def get_high_scores_route():
-    scores = get_high_scores()
+    score_data = request.json
+    table = 'high_scores_' + score_data['game']
+    print(table)
+    scores = get_high_scores(table)
     return jsonify([{'name': row['name'], 'score': row['score']} for row in scores])
 
 
@@ -56,9 +74,16 @@ def get_high_scores_route():
 def index():
     return render_template('index.html')
 
-@app.route('/snake')
+@app.route('/snake', methods=["POST", "GET"])
 def snake():
     return render_template('snake.html')
+
+@app.route('/snake_result', methods=["POST", "GET"])
+def snake_result():
+    score = request.form['snakeScore']
+    top_scores = get_high_scores('high_scores_snake')
+
+    return render_template('snake_result.html', score=score, top_scores=top_scores)
 
 @app.route('/hilo')
 def hilo():
@@ -77,7 +102,7 @@ def hilo():
         final_points = session['hilo_points']
         session['hilo_points'] = 100 # reset game points
         session['hilo_errors'] = 3 # reset errors
-        top_scores = get_high_scores()
+        top_scores = get_high_scores('high_scores_hilo')
         return render_template('hilo_gameover.html',
                                points = final_points,
                                top_scores = top_scores)

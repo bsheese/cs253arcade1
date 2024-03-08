@@ -6,9 +6,12 @@
     <style>
         .flex-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             height: 100%;
+        }
+        #score {
+            margin-bottom: 20px;
         }
         .game-container {
             width: 400px;
@@ -33,7 +36,18 @@
 
 {% block content %}
     <div class="flex-container">
-    <div id="gameContainer" class="game-container"></div>
+        <h1 class="mb-3">Snake</h1>
+        <div id="score" class="alert alert-info p-2 mb-3" role="alert">
+            Points: 0
+        </div>
+        <div id="gameContainer" class="game-container"></div>
+    </div>
+    <form action="{{ url_for('snake_result') }}" method="post" id="snakeDataForm">
+        <input value="0" name="snakeScore" id="snakeScore" hidden>
+        <button type="submit" hidden></button>
+    </form>
+
+        </div>
 
     <script>
         let snake = [{x: 200, y: 200}];
@@ -44,6 +58,9 @@
         const gameHeight = 400;
 
         function placeFood() {
+            let score = snake.length - 1;
+            document.getElementById("score").innerHTML = "Score: " + score;
+            document.getElementById("snakeScore").value = score;
             food = {
                 x: Math.floor(Math.random() * (gameWidth / 20)) * 20,
                 y: Math.floor(Math.random() * (gameHeight / 20)) * 20
@@ -51,21 +68,22 @@
         }
 
         function checkGameOver() {
-            const head = snake[0];
-            if (head.x < 0 || head.x >= gameWidth || head.y < 0 || head.y >= gameHeight) {
+            const nextHead = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            if (nextHead.x < 0 || nextHead.x >= gameWidth || nextHead.y < 0 || nextHead.y >= gameHeight) {
                 return true;
             }
             for (let i = 1; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
+                if (nextHead.x === snake[i].x && nextHead.y === snake[i].y) {
                     return true;
                 }
             }
-            return false;
-        }
+    return false;
+}
 
     function update() {
         if (checkGameOver()) {
             // Ask the player if they want to play again
+            document.getElementById("snakeDataForm").submit();
             let playAgain = confirm("Game Over! Do you want to play again?");
             if (playAgain) {
                 // Reset game state to start a new game
