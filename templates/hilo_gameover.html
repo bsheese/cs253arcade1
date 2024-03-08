@@ -6,10 +6,12 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>GAME OVER</h1>
+        <h2>Enter your name to save your score!</h2>
         <div class="alert alert-info p-2" role="alert">
             Points = {{ points }}
         </div>
     </div>
+    <!--
     <div>
         <h2>Top 10 Scores</h2>
         <ul class="list-group">
@@ -21,12 +23,14 @@
             {% endfor %}
         </ul>
     </div>
-
+    -->
     <div id="enter initials">
-        <form id="scoreForm">
+        <form id="scoreForm" action="{{ url_for('hilo_scores') }}" method="post">
             <input type="hidden" name="game" value="hilo">
             <input type="hidden" name="score" value="{{ points }}">
-            <input type="text" name="name" placeholder="Enter your name" required>
+            <label>
+                <input type="text" name="name" placeholder="Enter your name" required>
+            </label>
             <button type="submit">Submit</button>
         </form>
         <div id="responseMessage"></div>
@@ -54,11 +58,26 @@
             .catch((error) => {
                 console.error('Error:', error);
             });
+
+            fetch('/hilo_scores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonObject),
+            })
+            .then(response => response.text())
+            .then(html => {
+             document.body.innerHTML = html;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
         });
         </script>
 
 
 
 
-<a href="{{ url_for('hilo') }}" class="btn btn-primary">Start New Game</a>
+<!--<a href="{{ url_for('hilo') }}" class="btn btn-primary">Start New Game</a>-->
 {%  endblock content %}
