@@ -9,3 +9,4 @@ pyvenv.cfg
 .idea/vcs.xml
 .idea/guppygame2.iml
 .idea/misc.xml
+*.db
