@@ -1,19 +1,20 @@
 {% extends "layout.html" %}
 
-{% block title %}Snake scoreboard{% endblock %}
+{% block title %}Snakes Scoreboard{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+    <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>GAME OVER</h1>
+        <h1>Snake Scoreboard</h1>
         <div class="alert alert-info p-2" role="alert">
-            Points = {{ points }}
+            Points = {{ score_data }}
+            <input type="hidden" name="Points" value="{{ score_data }}" id="score">
         </div>
     </div>
     <div>
         <h2>Top 10 Scores</h2>
         <ul class="list-group">
-            {% for score in top_scores %}
+            {% for score in snake_top_scores %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     {{ score.name }}
                     <span class="badge badge-primary badge-pill">{{ score.score }}</span>
@@ -24,12 +25,13 @@
 
     <div id="enter initials">
         <form id="scoreForm">
-            <input type="hidden" name="game" value="hilo">
-            <input type="hidden" name="score" value="{{ points }}">
+            <input type="hidden" name="game" value="snake">
+            <input type="hidden" name="score" value="{{ score_data }}">
             <input type="text" name="name" placeholder="Enter your name" required>
             <button type="submit">Submit</button>
         </form>
         <div id="responseMessage"></div>
+    </div>
     </div>
 
     <script>
@@ -40,7 +42,7 @@
             var formData = new FormData(this);
             var jsonObject = Object.fromEntries(formData.entries());
 
-            fetch('/add_score', {
+            fetch('/snakeScore', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,10 +57,8 @@
                 console.error('Error:', error);
             });
         });
-        </script>
+    </script>
 
+    <a href="{{ url_for('snake') }}" class="btn btn-primary">Start New Game</a>
 
-
-
-<a href="{{ url_for('snake') }}" class="btn btn-primary">Start New Game</a>
 {%  endblock content %}
