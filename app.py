@@ -2,31 +2,65 @@ from flask import Flask, request, jsonify, render_template, session, redirect, u
 import sqlite3
 from random import randint
 
+
+import os
+from sqlite3 import dbapi2 as sqlite3
+from flask import Flask, request, g, redirect, url_for, render_template, flash
+
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key' # Required for session management
 
-DATABASE = 'highscores.db'
+# Load default config and override config from an environment variable
+app.config.update(dict(
+    DATABASE=os.path.join(app.root_path, 'scores.db'),
+    DEBUG=True,
+    SECRET_KEY='development key',
+))
+app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+
+def connect_db():
+    """Connects to the specific database."""
+    rv = sqlite3.connect(app.config['DATABASE'])
+    rv.row_factory = sqlite3.Row
+    return rv
+
 
 def init_db():
-    db = get_db_connection()
-    db.execute('''
-        CREATE TABLE IF NOT EXISTS high_scores (
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            score INTEGER
-        )
-    ''')
+    """Initializes the database."""
+    db = get_db()
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
     db.commit()
-    db.close()
 
-# Manually pushing the application context
-with app.app_context():
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Creates the database tables."""
     init_db()
+    print('Initialized the database.')
+
+
+def get_db():
+    """Opens a new database connection if there is none yet for the
+    current application context.
+    """
+    if not hasattr(g, 'sqlite_db'):
+        g.sqlite_db = connect_db()
+    return g.sqlite_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    """Closes the database again at the end of the request."""
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
+
+
+
+
+
+
 
 def add_score(name, score):
     conn = get_db_connection()
@@ -39,6 +73,10 @@ def get_high_scores(limit=10):
     scores = conn.execute('SELECT name, score FROM high_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
     conn.close()
     return scores
+
+# Manually pushing the application context
+with app.app_context():
+    init_db()
 
 @app.route('/add_score', methods=['POST'])
 def add_score_route():
